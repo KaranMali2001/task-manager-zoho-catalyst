@@ -1,0 +1,31 @@
+{
+  "name": "project_rainfall_function",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "node esbuild.config.js  && nodemon dist/server.js",
+    "build": "node esbuild.config.js --prod",
+    "start": "node dist/server.mjs"
+  },
+  "author": "karansignup5599@gmail.com",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "morgan": "^1.10.1",
+    "zcatalyst-sdk-node": "^3.1.0",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.6.2",
+    "esbuild": "^0.25.10",
+    "esbuild-node-externals": "^1.18.0",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

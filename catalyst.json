@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "targets": ["tasks"],
+    "ignore": [],
+    "source": "functions"
+  },
+  "env_variables": {
+    "ZOHO_CATALYST_ZCQL_PARSER": "V2"
+  },
+  "client": {
+    "source": "task-manager-frontend",
+    "plugin": "zcatalyst-cli-plugin-react"
+  }
+}
