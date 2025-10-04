@@ -1,21 +1,14 @@
+import { Loader2, Plus } from "lucide-react";
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { CreateTaskInput } from "../../types/task";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Textarea } from "../ui/textarea";
 
 interface CreateTaskDialogProps {
   onCreateTask: (task: CreateTaskInput) => void;
@@ -31,11 +24,23 @@ export function CreateTaskDialog({ onCreateTask, isPending }: CreateTaskDialogPr
   });
 
   const handleSubmit = () => {
-    if (!formData.title.trim()) {
+    if (!formData.title || !formData.title.trim()) {
       toast.error("Title is required");
       return;
     }
-    onCreateTask(formData);
+    if (formData.title.trim().length > 255) {
+      toast.error("Title must be less than 255 characters");
+      return;
+    }
+    if (!formData.status) {
+      toast.error("Status is required");
+      return;
+    }
+    onCreateTask({
+      ...formData,
+      title: formData.title.trim(),
+      description: formData.description?.trim() || "",
+    });
     setFormData({
       title: "",
       description: "",
@@ -47,43 +52,44 @@ export function CreateTaskDialog({ onCreateTask, isPending }: CreateTaskDialogPr
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" className="gap-2">
-          <Plus className="w-4 h-4" />
-          New Task
-        </Button>
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed rounded-sm h-full flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center justify-center gap-4 p-8">
+            <Plus className="w-16 h-16 text-muted-foreground" />
+            <p className="text-base sm:text-lg font-medium text-muted-foreground">Create New Task</p>
+          </div>
+        </Card>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="w-[calc(100%-2rem)] max-w-[500px] max-h-[90vh] overflow-y-auto rounded-sm">
         <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
-          <DialogDescription>Add a new task to your list.</DialogDescription>
+          <DialogTitle className="text-lg sm:text-xl">Create New Task</DialogTitle>
+          <DialogDescription className="text-sm">Add a new task to your list.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title"
-              placeholder="Enter task title"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            />
+            <Label htmlFor="title" className="text-sm">
+              Title *
+            </Label>
+            <Input id="title" placeholder="Enter task title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="text-sm sm:text-base" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-sm">
+              Description
+            </Label>
             <Textarea
               id="description"
               placeholder="Enter task description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={4}
+              className="text-sm sm:text-base resize-none"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value) => setFormData({ ...formData, status: value })}
-            >
-              <SelectTrigger>
+            <Label htmlFor="status" className="text-sm">
+              Status
+            </Label>
+            <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+              <SelectTrigger className="text-sm sm:text-base">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -94,11 +100,11 @@ export function CreateTaskDialog({ onCreateTask, isPending }: CreateTaskDialogPr
             </Select>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={() => setIsOpen(false)} className="w-full sm:w-auto text-sm">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button onClick={handleSubmit} disabled={isPending} className="w-full sm:w-auto text-sm">
             {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Create Task
           </Button>

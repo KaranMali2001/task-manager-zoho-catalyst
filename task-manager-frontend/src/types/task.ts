@@ -1,3 +1,12 @@
+export const TaskStatus = {
+  PENDING: "pending",
+  COMPLETED: "completed",
+ 
+  IN_PROGRESS: "in-progress",
+} as const;
+
+export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
+
 export interface Task {
   ROWID: string;
   CREATORID: string;

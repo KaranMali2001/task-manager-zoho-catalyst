@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { TaskCard } from "./TaskCard";
+import { CreateTaskDialog } from "./CreateTaskDialog";
 import { Loader2 } from "lucide-react";
 import type { Task } from "../../types/task";
 
@@ -12,6 +13,8 @@ interface TaskListProps {
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   onLoadMore?: () => void;
+  onCreateTask: (task: any) => void;
+  isCreating: boolean;
 }
 
 export function TaskList({
@@ -22,7 +25,9 @@ export function TaskList({
   isUpdating,
   hasNextPage,
   isFetchingNextPage,
-  onLoadMore
+  onLoadMore,
+  onCreateTask,
+  isCreating
 }: TaskListProps) {
   const observerTarget = useRef<HTMLDivElement>(null);
 
@@ -48,17 +53,10 @@ export function TaskList({
     };
   }, [hasNextPage, isFetchingNextPage, onLoadMore]);
 
-  if (tasks.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No tasks found. Create your first task!</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <CreateTaskDialog onCreateTask={onCreateTask} isPending={isCreating} />
         {tasks.map((task) => (
           <TaskCard
             key={task.ROWID}

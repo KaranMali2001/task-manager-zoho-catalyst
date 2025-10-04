@@ -1,4 +1,4 @@
-import { updateTaskType } from "@/types/task.type";
+import { TaskStatus, updateTaskType } from "@/types/task.type";
 import catalyst from "zcatalyst-sdk-node";
 
 type CatalystApp = ReturnType<typeof catalyst.initialize>;
@@ -7,6 +7,7 @@ export const taskService = {
   createTask: async (appCtx: CatalystApp, title: string, description: string, status: string = "pending") => {
     const datastore = appCtx.datastore();
     const table = datastore.table("Tasks");
+
     const rowData = { TITLE: title, DESCRIPTION: description, STATUS: status };
     const result = await table.insertRow(rowData);
     return result;
@@ -60,5 +61,12 @@ export const taskService = {
       nextToken: response.next_token,
       limit,
     };
+  },
+
+  getTasksWithFilter: async (appCtx: CatalystApp, status: TaskStatus) => {
+    const zcql = appCtx.zcql();
+    const query = `SELECT * FROM Tasks WHERE STATUS = '${status}' `;
+    const response = await zcql.executeZCQLQuery(query);
+    return response;
   },
 };

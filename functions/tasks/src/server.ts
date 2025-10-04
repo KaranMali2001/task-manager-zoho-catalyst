@@ -5,8 +5,13 @@ import { taskRouter } from "./routes/task.route";
 const app = express();
 app.use(express.json());
 app.use(morgan("dev"));
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    message: "OK",
+  });
+});
 
-app.use(taskRouter);
+app.use("/api", taskRouter);
 app.use((err: Errback, req: Request, res: Response, _next: Function) => {
   console.error(`[ERROR] ${new Date().toISOString()} - ${req.method} ${req.url}`);
   console.error(err);

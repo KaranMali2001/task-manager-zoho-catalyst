@@ -1,7 +1,8 @@
 import { taskService } from "@/services/task.service";
-import { createTaskType, updateTaskType } from "@/types/task.type";
+import { createTaskType, filterTaskSchema, updateTaskType } from "@/types/task.type";
 import { Request, Response } from "express";
 import catalyst from "zcatalyst-sdk-node";
+import z from "zod";
 
 export const taskController = {
   createTask: async (req: Request, res: Response) => {
@@ -57,13 +58,25 @@ export const taskController = {
       res.status(500).json({ message: "error while deleting task via ZCQL", error: error });
     }
   },
+
   getAllTasks: async (req: Request, res: Response) => {
     try {
-      const { nextToken, limit = 10 } = req.query;
       const appCtx = catalyst.initialize(req as any);
+      const { nextToken, limit = 10, status, searchQuery } = req.query;
+      if (status) {
+        const result = await z.safeParseAsync(filterTaskSchema, { searchQuery, status });
+        if (!result.success) {
+          res.status(400).json({ message: "invalid request", error: result.error.name });
+          return;
+        } else {
+          const taskswithFilter = await taskService.getTasksWithFilter(appCtx, result.data.status);
+          res.status(200).json({ message: "tasks retrieved with filter", result: taskswithFilter });
+          return;
+        }
+      }
 
       const result = await taskService.getAllTasks(appCtx, Number(limit), nextToken as string);
-      res.json({ message: "tasks retrieved", result });
+      res.json({ message: "tasks retrieved", result: result });
     } catch (error) {
       console.error("error while retrieving tasks", error);
       res.status(500).json({ message: "error while retrieving tasks", error: error });
