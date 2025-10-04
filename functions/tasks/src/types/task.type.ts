@@ -1,11 +1,12 @@
 import z from "zod";
 export const createTaskSchema = z.object({
   title: z.string().min(1).max(100),
-  description: z.string().min(1).max(1000),
+  description: z.string().max(1000).optional().default(""),
+  status: z.enum(["pending", "completed", "cancelled", "in-progress"]).optional().default("pending"),
 });
 export const updateTaskSchema = z.object({
   title: z.string().min(1).max(100).optional(),
-  description: z.string().min(1).max(1000).optional(),
+  description: z.string().max(1000).optional(),
   status: z.enum(["pending", "completed", "cancelled", "in-progress"]).optional(),
 });
 export type createTaskType = z.infer<typeof createTaskSchema>;

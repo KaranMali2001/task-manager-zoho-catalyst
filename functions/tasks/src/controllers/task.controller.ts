@@ -1,19 +1,19 @@
+import { taskService } from "@/services/task.service";
 import { createTaskType, updateTaskType } from "@/types/task.type";
 import { Request, Response } from "express";
 import catalyst from "zcatalyst-sdk-node";
-import { taskService } from "@/services/task.service";
 
 export const taskController = {
   createTask: async (req: Request, res: Response) => {
     try {
       const appCtx = catalyst.initialize(req as any, { type: catalyst.type.advancedio });
-      const { title, description } = req.body as createTaskType;
+      const { title, description, status } = req.body as createTaskType;
 
-      const result = await taskService.createTask(appCtx, title, description);
-      res.json({ message: "task created via ZCQL", result });
+      const result = await taskService.createTask(appCtx, title, description || "", status || "pending");
+      res.json({ message: "task created", result });
     } catch (error) {
-      console.error("error while creating task via ZCQL", error);
-      res.status(500).json({ message: "error while creating task via ZCQL", error });
+      console.error("error while creating task", error);
+      res.status(500).json({ message: "error while creating task", error });
     }
   },
   getTask: async (req: Request, res: Response) => {
@@ -59,13 +59,14 @@ export const taskController = {
   },
   getAllTasks: async (req: Request, res: Response) => {
     try {
+      const { nextToken, limit = 10 } = req.query;
       const appCtx = catalyst.initialize(req as any);
 
-      const result = await taskService.getAllTasks(appCtx);
-      res.json({ message: "tasks retrieved via ZCQL", result });
+      const result = await taskService.getAllTasks(appCtx, Number(limit), nextToken as string);
+      res.json({ message: "tasks retrieved", result });
     } catch (error) {
-      console.error("error while retrieving tasks via ZCQL", error);
-      res.status(500).json({ message: "error while retrieving tasks via ZCQL", error: error });
+      console.error("error while retrieving tasks", error);
+      res.status(500).json({ message: "error while retrieving tasks", error: error });
     }
   },
 };

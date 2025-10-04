@@ -1,52 +1,64 @@
-import { createTaskType, updateTaskType } from "@/types/task.type";
+import { updateTaskType } from "@/types/task.type";
 import catalyst from "zcatalyst-sdk-node";
 
 type CatalystApp = ReturnType<typeof catalyst.initialize>;
 
 export const taskService = {
-  createTask: async (appCtx: CatalystApp, title: string, description: string) => {
-    const zcql = appCtx.zcql();
-    const query = `INSERT INTO Task_manager (TITLE, DESCRIPTION, STATUS) VALUES ('${title.replace(/'/g, "''")}', '${description.replace(/'/g, "''")}', 'pending')`;
-    const result = await zcql.executeZCQLQuery(query);
+  createTask: async (appCtx: CatalystApp, title: string, description: string, status: string = "pending") => {
+    const datastore = appCtx.datastore();
+    const table = datastore.table("Tasks");
+    const rowData = { TITLE: title, DESCRIPTION: description, STATUS: status };
+    const result = await table.insertRow(rowData);
     return result;
   },
 
   getTask: async (appCtx: CatalystApp, id: string) => {
-    const zcql = appCtx.zcql();
-    const query = `SELECT * FROM Task_manager WHERE ROWID=${id}`;
-    const result = await zcql.executeZCQLQuery(query);
+    const datastore = appCtx.datastore();
+    const table = datastore.table("Tasks");
+    const result = await table.getRow(id);
     return result;
   },
 
   updateTask: async (appCtx: CatalystApp, id: string, data: updateTaskType) => {
     const { title, description, status } = data;
-    const zcql = appCtx.zcql();
 
-    const setParts: string[] = [];
-    if (title !== undefined) setParts.push(`TITLE='${title.replace(/'/g, "''")}'`);
-    if (description !== undefined) setParts.push(`DESCRIPTION='${description.replace(/'/g, "''")}'`);
-    if (status !== undefined) setParts.push(`STATUS='${status}'`);
+    const updatedRowData: {
+      ROWID: string;
+      TITLE?: string;
+      DESCRIPTION?: string;
+      STATUS?: string;
+    } = { ROWID: id };
+    if (title !== undefined) updatedRowData.TITLE = title;
+    if (description !== undefined) updatedRowData.DESCRIPTION = description;
+    if (status !== undefined) updatedRowData.STATUS = status;
 
-    if (setParts.length === 0) {
+    if (Object.keys(updatedRowData).length === 1) {
       throw new Error("No fields to update");
     }
 
-    const query = `UPDATE Task_manager SET ${setParts.join(", ")} WHERE ROWID=${id}`;
-    const result = await zcql.executeZCQLQuery(query);
+    const datastore = appCtx.datastore();
+    const table = datastore.table("Tasks");
+    const result = await table.updateRow(updatedRowData);
     return result;
   },
 
   deleteTask: async (appCtx: CatalystApp, id: string) => {
-    const zcql = appCtx.zcql();
-    const query = `DELETE FROM Task_manager WHERE ROWID=${id}`;
-    const result = await zcql.executeZCQLQuery(query);
+    const datastore = appCtx.datastore();
+    const table = datastore.table("Tasks");
+    const result = await table.deleteRow(id);
     return result;
   },
 
-  getAllTasks: async (appCtx: CatalystApp) => {
-    const zcql = appCtx.zcql();
-    const query = "SELECT * FROM Task_manager";
-    const result = await zcql.executeZCQLQuery(query);
-    return result;
+  getAllTasks: async (appCtx: CatalystApp, limit: number = 10, nextToken?: string) => {
+    const datastore = appCtx.datastore();
+    const table = datastore.table("Tasks");
+
+    const response = await table.getPagedRows({ maxRows: limit, nextToken });
+    return {
+      data: response.data,
+      hasNext: response.more_records,
+      nextToken: response.next_token,
+      limit,
+    };
   },
 };

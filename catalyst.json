@@ -7,8 +7,11 @@
   "env_variables": {
     "ZOHO_CATALYST_ZCQL_PARSER": "V2"
   },
-  "client": {
-    "source": "task-manager-frontend",
-    "plugin": "zcatalyst-cli-plugin-react"
-  }
+
+  "slate": [
+    {
+      "name": "task-manager-frontend",
+      "source": "/home/karan/Desktop/Assignments/task-manager-zoho-catalyst/task-manager-frontend"
+    }
+  ]
 }
