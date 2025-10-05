@@ -69,4 +69,15 @@ export const taskService = {
     const response = await zcql.executeZCQLQuery(query);
     return response;
   },
+  getTaskWithSearch: async (appCtx: CatalystApp, search: string) => {
+    const searchInstance = appCtx.search();
+    const config = {
+      search: search,
+      search_table_columns: {
+        Tasks: ["TITLE"],
+      },
+    };
+    const result = await searchInstance.executeSearchQuery(config);
+    return result;
+  },
 };

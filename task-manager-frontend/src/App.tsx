@@ -1,15 +1,19 @@
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, Search, X } from "lucide-react";
 import { useState } from "react";
 import { TaskList } from "./components/tasks/TaskList";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
+import { Input } from "./components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
+import { useDebounce } from "./hooks/useDebounce";
 import { useTasks } from "./hooks/useTasks";
 import { TaskStatus } from "./types/task";
 
 function App() {
   const [statusFilter, setStatusFilter] = useState<TaskStatus | undefined>(undefined);
-  const { tasks, isLoading, isError, error, createTask, updateTask, deleteTask, fetchNextPage, hasNextPage, isFetchingNextPage } = useTasks(statusFilter);
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 500);
+  const { tasks, isLoading, isError, error, createTask, updateTask, deleteTask, fetchNextPage, hasNextPage, isFetchingNextPage } = useTasks(statusFilter, debouncedSearch);
 
   if (isLoading) {
     return (
@@ -53,7 +57,25 @@ function App() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative w-full sm:flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none" />
+            <Input type="text" placeholder="Search tasks by title..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="pl-10 pr-10 w-full" />
+            {searchInput && (
+              <button
+                onClick={() => setSearchInput("")}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+            {isLoading && searchInput && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
+          </div>
           <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? undefined : (value as TaskStatus))}>
             <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Filter by status" />

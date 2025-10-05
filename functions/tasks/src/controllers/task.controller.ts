@@ -74,7 +74,11 @@ export const taskController = {
           return;
         }
       }
-
+      if (searchQuery) {
+        const result = await taskService.getTaskWithSearch(appCtx, searchQuery as string);
+        res.status(200).json({ message: "tasks retrieved with search", result: result });
+        return;
+      }
       const result = await taskService.getAllTasks(appCtx, Number(limit), nextToken as string);
       res.json({ message: "tasks retrieved", result: result });
     } catch (error) {

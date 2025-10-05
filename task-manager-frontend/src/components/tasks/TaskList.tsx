@@ -57,7 +57,7 @@ export function TaskList({
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <CreateTaskDialog onCreateTask={onCreateTask} isPending={isCreating} />
-        {tasks.map((task) => (
+        {tasks.filter(Boolean).map((task) => (
           <TaskCard
             key={task.ROWID}
             task={task}

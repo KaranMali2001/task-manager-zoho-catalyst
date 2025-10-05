@@ -10,7 +10,7 @@ interface TasksResponse {
   limit: number;
 }
 
-export function useTasks(statusFilter?: TaskStatus) {
+export function useTasks(statusFilter?: TaskStatus, searchQuery?: string) {
   const queryClient = useQueryClient();
 
   const {
@@ -22,7 +22,7 @@ export function useTasks(statusFilter?: TaskStatus) {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery<TasksResponse>({
-    queryKey: ["tasks", statusFilter],
+    queryKey: ["tasks", statusFilter, searchQuery],
     queryFn: async ({ pageParam }) => {
       const params = new URLSearchParams();
       if (pageParam) {
@@ -31,8 +31,22 @@ export function useTasks(statusFilter?: TaskStatus) {
       if (statusFilter) {
         params.append("status", statusFilter);
       }
+      if (searchQuery) {
+        params.append("searchQuery", searchQuery);
+      }
       const res = await apiClient.get(`/?${params.toString()}`);
       const result = res.data.result;
+
+      // Handle search response format
+      if (searchQuery && result && typeof result === 'object' && 'Tasks' in result) {
+        const tasks = Array.isArray(result.Tasks) ? result.Tasks : [];
+        return {
+          data: tasks,
+          hasNext: false,
+          nextToken: undefined,
+          limit: tasks.length,
+        };
+      }
 
       // Handle filtered response format: array of {Tasks: {...}}
       if (statusFilter && Array.isArray(result)) {
@@ -49,6 +63,8 @@ export function useTasks(statusFilter?: TaskStatus) {
     },
     getNextPageParam: (lastPage) => lastPage.hasNext ? lastPage.nextToken : undefined,
     initialPageParam: undefined,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
   });
 
   const tasks = data?.pages.flatMap((page) => page.data) ?? [];
